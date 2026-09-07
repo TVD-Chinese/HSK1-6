@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Listening - VUA TRÒ CHƠI</title>
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#f4f7fb;
+display:flex;
+min-height:100vh;
+}
+
+.sidebar{
+width:260px;
+background:#122c5a;
+color:white;
+padding:30px 20px;
+}
+
+.logo{
+font-size:24px;
+font-weight:bold;
+text-align:center;
+margin-bottom:40px;
+}
+
+.logo-circle{
+width:70px;
+height:70px;
+border-radius:50%;
+background:white;
+color:#122c5a;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:26px;
+font-weight:bold;
+margin:0 auto 15px;
+}
+
+.menu{
+list-style:none;
+}
+
+.menu li{
+padding:14px;
+margin-bottom:10px;
+border-radius:10px;
+cursor:pointer;
+}
+
+.menu li:hover{
+background:rgba(255,255,255,.15);
+}
+
+.menu a{
+color:white;
+text-decoration:none;
+display:block;
+}
+
+.menu .active{
+background:rgba(255,255,255,.18);
+}
+
+.content{
+flex:1;
+padding:25px;
+}
+
+.top-title{
+font-size:30px;
+font-weight:bold;
+margin-bottom:25px;
+}
+
+.section{
+background:white;
+padding:30px;
+border-radius:20px;
+box-shadow:0 5px 15px rgba(0,0,0,.08);
+max-width:900px;
+}
+
+.section h2{
+margin-bottom:10px;
+}
+
+.subtitle{
+color:#777;
+margin-bottom:25px;
+}
+
+.listen-card{
+background:#f6f8fd;
+border-radius:18px;
+padding:35px;
+text-align:center;
+}
+
+.audio-btn{
+width:100px;
+height:100px;
+border:none;
+border-radius:50%;
+background:#122c5a;
+color:white;
+font-size:42px;
+cursor:pointer;
+box-shadow:0 6px 15px rgba(0,0,0,.12);
+}
+
+.audio-btn:hover{
+transform:scale(1.04);
+}
+
+.audio-label{
+margin-top:15px;
+color:#666;
+font-size:15px;
+}
+
+.progress{
+margin:25px auto 10px;
+font-weight:bold;
+color:#122c5a;
+}
+
+.answer{
+width:100%;
+max-width:650px;
+padding:15px 18px;
+border:2px solid #dce3ef;
+border-radius:12px;
+font-size:20px;
+outline:none;
+text-align:center;
+margin-top:25px;
+}
+
+.answer:focus{
+border-color:#122c5a;
+}
+
+.buttons{
+display:flex;
+justify-content:center;
+gap:12px;
+flex-wrap:wrap;
+margin-top:15px;
+}
+
+.btn{
+padding:12px 22px;
+border:none;
+border-radius:10px;
+color:white;
+cursor:pointer;
+font-size:16px;
+}
+
+.check-btn{
+background:#122c5a;
+}
+
+.show-btn{
+background:#e58a00;
+}
+
+.next-btn{
+background:#2196F3;
+display:none;
+}
+
+.btn:disabled{
+opacity:.55;
+cursor:not-allowed;
+}
+
+.result{
+margin-top:20px;
+min-height:28px;
+font-size:18px;
+font-weight:bold;
+}
+
+.answer-box{
+margin-top:15px;
+padding:15px;
+background:white;
+border-radius:12px;
+display:none;
+}
+
+.stats{
+display:flex;
+justify-content:center;
+gap:30px;
+margin-top:20px;
+color:#555;
+}
+
+.hint{
+margin-top:18px;
+color:#777;
+font-size:14px;
+}
+
+@media(max-width:768px){
+body{
+flex-direction:column;
+}
+
+.sidebar{
+width:100%;
+}
+
+.content{
+padding:15px;
+}
+
+.section{
+padding:20px;
+}
+
+.audio-btn{
+width:85px;
+height:85px;
+font-size:36px;
+}
+}
+</style>
+</head>
+
+<body>
+
+<div class="sidebar">
+
+<div class="logo">
+<div class="logo-circle">👑</div>
+VUA<br>TRÒ CHƠI
+</div>
+
+<ul class="menu">
+<li><a href="index.html">🏠 Dashboard</a></li>
+<li><a href="library.html">📚 Thư viện</a></li>
+<li><a href="flashcard.html">🎴 Flashcard</a></li>
+<li><a href="quiz.html">📝 Quiz</a></li>
+<li class="active"><a href="listening.html">🎧 Listening</a></li>
+<li><a href="chinese.html">⌨️ Học đánh</a></li>
+<li>📊 Thống kê</li>
+<li>⚙️ Cài đặt</li>
+</ul>
+
+</div>
+
+<div class="content">
+
+<div class="top-title">
+🎧 Listening
+</div>
+
+<div class="section">
+
+<h2>🎧 Nghe tiếng Trung</h2>
+<p class="subtitle">
+Nghe từ/câu tiếng Trung rồi tự gõ lại đáp án.
+</p>
+
+<div class="listen-card">
+
+<button id="playBtn" class="audio-btn" type="button" title="Phát audio">
+🔊
+</button>
+
+<div class="audio-label">
+Bấm để nghe lại
+</div>
+
+<div id="progress" class="progress">
+Đang chuẩn bị...
+</div>
+
+<input
+id="answerInput"
+class="answer"
+type="text"
+autocomplete="off"
+placeholder="Nhập tiếng Trung..."
+>
+
+<div class="buttons">
+
+<button id="checkBtn" class="btn check-btn" type="button">
+✓ Kiểm tra
+</button>
+
+<button id="showBtn" class="btn show-btn" type="button">
+↓ Hiện đáp án
+</button>
+
+<button id="nextBtn" class="btn next-btn" type="button">
+→ Next
+</button>
+
+</div>
+
+<div id="result" class="result" aria-live="polite"></div>
+
+<div id="answerBox" class="answer-box"></div>
+
+<div class="stats">
+<span>✅ Đúng: <b id="correctCount">0</b></span>
+<span>❌ Sai: <b id="wrongCount">0</b></span>
+</div>
+
+<div class="hint">
+Enter = Kiểm tra &nbsp; | &nbsp; ↓ = Hiện đáp án &nbsp; | &nbsp; → = Next
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+/*
+ * Dữ liệu audio:
+ * Mỗi phần tử có dạng:
+ * {
+ *   text: "你好",
+ *   pronunciation: "nǐ hǎo",
+ *   audio: "audio/001.mp3"
+ * }
+ *
+ * Hiện tại chưa gắn audio vì file MP3 giáo trình chưa có
+ * mốc thời gian tương ứng với từng từ/câu trong kho từ.
+ */
+
+const AUDIO_DATA = [];
+
+let words = JSON.parse(localStorage.getItem("words")) || [];
+
+let currentIndex = 0;
+let currentItem = null;
+let correctCount = 0;
+let wrongCount = 0;
+
+const playBtn = document.getElementById("playBtn");
+const answerInput = document.getElementById("answerInput");
+const checkBtn = document.getElementById("checkBtn");
+const showBtn = document.getElementById("showBtn");
+const nextBtn = document.getElementById("nextBtn");
+const result = document.getElementById("result");
+const answerBox = document.getElementById("answerBox");
+const progress = document.getElementById("progress");
+
+let audio = null;
+
+function getItems(){
+
+    /*
+     * Nếu sau này có AUDIO_DATA thì ưu tiên dùng audio đó.
+     * Nếu chưa có, lấy chữ trong kho words làm dữ liệu chuẩn.
+     */
+    if(AUDIO_DATA.length > 0){
+        return AUDIO_DATA;
+    }
+
+    return words.map(word => ({
+        text: word.korean || "",
+        pronunciation: word.pronunciation || "",
+        meaning: word.meaning || "",
+        audio: ""
+    })).filter(item => item.text);
+
+}
+
+function updateProgress(){
+
+    const items = getItems();
+
+    if(items.length === 0){
+        progress.innerText = "Chưa có dữ liệu Listening";
+        return;
+    }
+
+    progress.innerText =
+        "Từ " + (currentIndex + 1) + " / " + items.length;
+}
+
+function loadQuestion(){
+
+    const items = getItems();
+
+    if(items.length === 0){
+
+        currentItem = null;
+
+        progress.innerText =
+            "Chưa có từ vựng để luyện Listening.";
+
+        answerInput.disabled = true;
+        checkBtn.disabled = true;
+        showBtn.disabled = true;
+        playBtn.disabled = true;
+
+        return;
+    }
+
+    if(currentIndex >= items.length){
+        currentIndex = 0;
+    }
+
+    currentItem = items[currentIndex];
+
+    answerInput.value = "";
+    answerInput.disabled = false;
+
+    result.innerHTML = "";
+    answerBox.innerHTML = "";
+    answerBox.style.display = "none";
+
+    nextBtn.style.display = "none";
+    showBtn.style.display = "inline-block";
+    checkBtn.style.display = "inline-block";
+
+    updateProgress();
+
+    answerInput.focus();
+
+    playAudio();
+}
+
+function playAudio(){
+
+    if(!currentItem){
+        return;
+    }
+
+    if(audio){
+        audio.pause();
+        audio.currentTime = 0;
+        audio = null;
+    }
+
+    if(currentItem.audio){
+
+        audio = new Audio(currentItem.audio);
+
+        audio.play().catch(()=>{
+            result.innerHTML =
+                "⚠️ Không thể tự phát audio. Bấm 🔊 để nghe.";
+        });
+
+    }else{
+
+        result.innerHTML =
+            "ℹ️ Chưa gắn file audio cho từ này.";
+
+    }
+}
+
+function normalizeText(text){
+
+    return String(text || "")
+        .trim()
+        .replace(/\s+/g,"")
+        .replace(/[，。！？、,.!?；;:："'“”‘’]/g,"");
+
+}
+
+function checkAnswer(){
+
+    if(!currentItem){
+        return;
+    }
+
+    const userAnswer =
+        normalizeText(answerInput.value);
+
+    const correctAnswer =
+        normalizeText(currentItem.text);
+
+    if(!userAnswer){
+        result.innerHTML = "⚠️ Hãy nhập đáp án.";
+        answerInput.focus();
+        return;
+    }
+
+    if(userAnswer === correctAnswer){
+
+        correctCount++;
+
+        document.getElementById("correctCount").innerText =
+            correctCount;
+
+        result.innerHTML = "✅ Chính xác!";
+
+        /*
+         * Đúng → tự động sang câu tiếp theo.
+         */
+        setTimeout(()=>{
+            nextQuestion();
+        },500);
+
+    }else{
+
+        wrongCount++;
+
+        document.getElementById("wrongCount").innerText =
+            wrongCount;
+
+        result.innerHTML =
+            "❌ Chưa đúng, thử lại.";
+
+        answerInput.select();
+        answerInput.focus();
+
+    }
+
+}
+
+function showAnswer(){
+
+    if(!currentItem){
+        return;
+    }
+
+    answerBox.innerHTML =
+        "📖 Đáp án: <b>" +
+        currentItem.text +
+        "</b>" +
+        (currentItem.pronunciation
+            ? "<br>" + currentItem.pronunciation
+            : "") +
+        (currentItem.meaning
+            ? "<br>" + currentItem.meaning
+            : "");
+
+    answerBox.style.display = "block";
+
+    result.innerHTML =
+        "📖 Đã hiện đáp án.";
+
+    /*
+     * Sau khi xem đáp án:
+     * - Ẩn nút Hiện đáp án
+     * - Hiện Next
+     */
+    showBtn.style.display = "none";
+    nextBtn.style.display = "inline-block";
+
+    answerInput.focus();
+}
+
+function nextQuestion(){
+
+    const items = getItems();
+
+    if(items.length === 0){
+        return;
+    }
+
+    currentIndex++;
+
+    if(currentIndex >= items.length){
+        currentIndex = 0;
+    }
+
+    loadQuestion();
+}
+
+playBtn.addEventListener("click",playAudio);
+checkBtn.addEventListener("click",checkAnswer);
+showBtn.addEventListener("click",showAnswer);
+nextBtn.addEventListener("click",nextQuestion);
+
+answerInput.addEventListener("keydown",function(e){
+
+    /*
+     * Enter = Kiểm tra
+     */
+    if(e.key === "Enter"){
+
+        e.preventDefault();
+        checkAnswer();
+
+    }
+
+    /*
+     * ↓ = Hiện đáp án
+     */
+    if(e.key === "ArrowDown"){
+
+        e.preventDefault();
+
+        if(showBtn.style.display !== "none"){
+            showAnswer();
+        }
+
+    }
+
+    /*
+     * → = Next
+     */
+    if(e.key === "ArrowRight"){
+
+        e.preventDefault();
+
+        if(nextBtn.style.display !== "none"){
+            nextQuestion();
+        }
+
+    }
+
+});
+
+loadQuestion();
+</script>
+
+</body>
+</html>
