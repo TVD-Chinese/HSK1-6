@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🎧 Listening - VUA TRÒ CHƠI</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f4f6f9;color:#222}
+.sidebar{position:fixed;left:0;top:0;width:240px;height:100vh;background:#111;color:#fff;padding:25px 18px}
+.logo{text-align:center;font-weight:900;font-size:24px;line-height:1.05;margin-bottom:35px}
+.logo small{font-size:15px;letter-spacing:2px}
+.menu a{display:block;color:#ddd;text-decoration:none;padding:13px 14px;border-radius:8px;margin:5px 0}
+.menu a:hover,.menu a.active{background:#2b2b2b;color:#fff}
+.main{margin-left:240px;padding:35px;max-width:1000px}
+.card{background:#fff;border-radius:14px;padding:30px;box-shadow:0 4px 18px rgba(0,0,0,.08)}
+h1{margin-top:0}
+.progress{text-align:center;color:#777;margin-bottom:15px}
+.play{display:block;margin:20px auto;width:125px;height:125px;border-radius:50%;border:0;background:#111;color:#fff;font-size:48px;cursor:pointer}
+.play:hover{transform:scale(1.03)}
+input{width:100%;padding:15px;font-size:20px;border:2px solid #ddd;border-radius:10px;outline:none}
+input:focus{border-color:#111}
+.buttons{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+button.action{padding:12px 20px;border:0;border-radius:9px;background:#111;color:#fff;cursor:pointer;font-size:16px}
+button.secondary{background:#ddd;color:#222}
+.result{text-align:center;font-size:18px;font-weight:bold;min-height:28px;margin-top:15px}
+.answer{display:none;margin-top:18px;padding:18px;border-radius:10px;background:#f1f1f1;text-align:center;font-size:18px}
+.hint{text-align:center;color:#777;margin-top:15px;font-size:14px}
+.stats{display:flex;justify-content:space-between;color:#666;margin-top:20px}
+.back{text-align:center;margin-top:20px}
+.back a{color:#333}
+.no-data{text-align:center;padding:30px;color:#777}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="logo">👑<br>VUA<br><small>TRÒ CHƠI</small></div>
+  <nav class="menu">
+    <a href="index.html">🏠 Dashboard</a>
+    <a href="library.html">📚 Thư viện</a>
+    <a href="flashcard.html">🎴 Flashcard</a>
+    <a href="quiz.html">📝 Quiz</a>
+    <a href="listening_library.html">🎧 Listening</a>
+    <a href="chinese.html">⌨️ Học tiếng Trung</a>
+  </nav>
+</aside>
+
+<main class="main">
+<h1>🎧 Listening</h1>
+<div class="card" id="app"></div>
+</main>
+
+<script>
+const KEY="listeningLibrary";
+let words=[];
+let index=0;
+let correct=0;
+let wrong=0;
+let answered=false;
+let audio=null;
+
+function load(){
+  try{words=JSON.parse(localStorage.getItem(KEY)||"[]")}catch(e){words=[]}
+  // Only use entries that actually have embedded audio.
+  words=words.filter(x=>x && x.hanzi && x.audioData);
+}
+
+function renderNoData(){
+  document.getElementById("app").innerHTML=`
+    <div class="no-data">
+      <h2>🎧 Chưa có dữ liệu Listening</h2>
+      <p>Hãy vào Thư viện Listening và nhập Excel + audio trước.</p>
+      <div class="back"><a href="listening_library.html">← Mở Thư viện Listening</a></div>
+    </div>`;
+}
+
+function current(){return words[index]}
+
+function render(){
+  if(!words.length){renderNoData();return}
+  document.getElementById("app").innerHTML=`
+    <div class="progress">Từ ${index+1} / ${words.length}</div>
+    <button class="play" id="playBtn" title="Phát audio">🔊</button>
+    <input id="answer" placeholder="Nghe và nhập chữ Hán..." autocomplete="off">
+    <div class="buttons">
+      <button class="action" id="checkBtn">✓ Kiểm tra <b>Enter</b></button>
+      <button class="action secondary" id="showBtn">↓ Hiện đáp án</button>
+      <button class="action secondary" id="nextBtn" style="display:none">→ Câu tiếp</button>
+    </div>
+    <div class="result" id="result"></div>
+    <div class="answer" id="answerBox"></div>
+    <div class="hint">Enter = kiểm tra · ↓ = hiện đáp án · → = câu tiếp</div>
+    <div class="stats">
+      <span>Đúng: <b id="correct">${correct}</b></span>
+      <span>Sai: <b id="wrong">${wrong}</b></span>
+    </div>`;
+  document.getElementById("playBtn").onclick=play;
+  document.getElementById("checkBtn").onclick=checkAnswer;
+  document.getElementById("showBtn").onclick=showAnswer;
+  document.getElementById("nextBtn").onclick=nextWord;
+  document.getElementById("answer").focus();
+}
+
+function play(){
+  if(!current()?.audioData)return;
+  if(audio){audio.pause();audio.currentTime=0}
+  audio=new Audio(current().audioData);
+  audio.play().catch(()=>{});
+}
+
+function checkAnswer(){
+  if(answered)return;
+  const input=document.getElementById("answer").value.trim();
+  if(!input)return;
+  if(input===current().hanzi){
+    correct++;
+    answered=true;
+    document.getElementById("correct").textContent=correct;
+    document.getElementById("result").textContent="✅ Chính xác!";
+    setTimeout(nextWord,500);
+  }else{
+    wrong++;
+    document.getElementById("wrong").textContent=wrong;
+    document.getElementById("result").textContent="❌ Chưa đúng, thử lại!";
+  }
+}
+
+function showAnswer(){
+  if(answered && document.getElementById("answerBox").style.display==="block")return;
+  answered=true;
+  const w=current();
+  const box=document.getElementById("answerBox");
+  box.innerHTML=`<b>${esc(w.hanzi)}</b><br>${esc(w.pinyin||"")}<br>${esc(w.meaning||"")}`;
+  box.style.display="block";
+  document.getElementById("showBtn").style.display="none";
+  document.getElementById("nextBtn").style.display="inline-block";
+}
+
+function nextWord(){
+  if(audio){audio.pause();audio=null}
+  index++;
+  if(index>=words.length){
+    alert(`🎉 Hoàn thành! Đúng ${correct} / ${words.length}`);
+    index=0; correct=0; wrong=0;
+  }
+  answered=false;
+  render();
+  setTimeout(play,200);
+}
+
+function esc(s){
+  return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+}
+
+document.addEventListener("keydown",e=>{
+  if(!words.length)return;
+  if(e.key==="Enter"){
+    e.preventDefault();
+    checkAnswer();
+  }else if(e.key==="ArrowDown"){
+    e.preventDefault();
+    showAnswer();
+  }else if(e.key==="ArrowRight"){
+    const btn=document.getElementById("nextBtn");
+    if(btn && btn.style.display!=="none"){
+      e.preventDefault();
+      nextWord();
+    }
+  }
+});
+
+load();
+render();
+if(words.length)setTimeout(play,400);
+</script>
+</body>
+</html>
